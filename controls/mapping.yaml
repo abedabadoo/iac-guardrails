@@ -1,0 +1,22 @@
+# Control matrix — maps each guardrail policy to the frameworks an auditor speaks.
+# The report CLI joins conftest results to these rows by `package`.
+#
+# package: the Rego package implementing the control
+# title:   human-readable control statement
+# cis / soc2 / nist: framework control identifiers
+# severity: block | warn
+
+controls:
+  - package: guardrails.aws.s3_public_access
+    title: "S3 buckets must block all public access"
+    cis: "2.1.5"
+    soc2: "CC6.1"
+    nist: "AC-3"
+    severity: block
+
+  - package: guardrails.aws.security_group_ssh
+    title: "Security groups must not expose SSH (22) to the world"
+    cis: "5.2"
+    soc2: "CC6.6"
+    nist: "SC-7"
+    severity: block

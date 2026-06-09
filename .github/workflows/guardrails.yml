@@ -1,0 +1,50 @@
+name: Guardrails
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OPA
+        run: |
+          curl -sSL -o /usr/local/bin/opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x /usr/local/bin/opa
+          opa version
+
+      - name: Unit-test every policy
+        run: opa test policies/ -v
+
+      - name: Install Conftest
+        run: |
+          CONFTEST_VERSION=0.56.0
+          curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz" \
+            | tar -xz -C /usr/local/bin conftest
+          conftest --version
+
+      - name: Gate — secure plan must pass
+        run: conftest test fixtures/pass/secure_plan.json -p policies/
+
+      - name: Gate — insecure plan must fail (negative test)
+        run: |
+          if conftest test fixtures/fail/insecure_plan.json -p policies/; then
+            echo "::error::insecure fixture unexpectedly PASSED — a guardrail is not firing"
+            exit 1
+          else
+            echo "insecure fixture correctly blocked ✅"
+          fi
+
+      - name: Compliance report (insecure plan, for visibility)
+        if: always()
+        run: |
+          python3 -m pip install --quiet pyyaml
+          conftest test fixtures/fail/insecure_plan.json -p policies/ --output json > /tmp/r.json || true
+          python3 cli/report.py --conftest-json /tmp/r.json || true
