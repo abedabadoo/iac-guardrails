@@ -48,14 +48,16 @@ def run_conftest(plan: str) -> list[dict]:
 
 def collect_failures(results: list[dict]) -> list[dict]:
     failures = []
-    for f in results:
+    for result in results:
+        # With --all-namespaces conftest emits one result object per namespace;
+        # the Rego package is on the result, not the individual finding.
+        namespace = result.get("namespace", "")
         for kind in ("failures", "warnings"):
-            for item in f.get(kind, []):
+            for item in result.get(kind, []):
                 failures.append(
                     {
                         "level": "block" if kind == "failures" else "warn",
-                        "namespace": item.get("metadata", {}).get("package")
-                        or item.get("namespace", ""),
+                        "namespace": item.get("metadata", {}).get("package") or namespace,
                         "msg": item.get("msg", ""),
                     }
                 )
