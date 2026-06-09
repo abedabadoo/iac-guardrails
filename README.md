@@ -25,8 +25,8 @@ CI, as code:
 ```
 terraform plan -out=plan.out
 terraform show -json plan.out > plan.json
-conftest test plan.json -p policies/        # gate the build
-python cli/report.py plan.json              # human/auditor report mapped to controls
+conftest test plan.json -p policies/ --all-namespaces   # gate the build
+python cli/report.py plan.json                          # human/auditor report mapped to controls
 ```
 
 Each policy is a `deny` rule over the Terraform plan's `resource_changes`. Policies live in `policies/aws/`,

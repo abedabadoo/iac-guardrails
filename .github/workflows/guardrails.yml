@@ -31,11 +31,11 @@ jobs:
           conftest --version
 
       - name: Gate — secure plan must pass
-        run: conftest test fixtures/pass/secure_plan.json -p policies/
+        run: conftest test fixtures/pass/secure_plan.json -p policies/ --all-namespaces
 
       - name: Gate — insecure plan must fail (negative test)
         run: |
-          if conftest test fixtures/fail/insecure_plan.json -p policies/; then
+          if conftest test fixtures/fail/insecure_plan.json -p policies/ --all-namespaces; then
             echo "::error::insecure fixture unexpectedly PASSED — a guardrail is not firing"
             exit 1
           else
@@ -46,5 +46,5 @@ jobs:
         if: always()
         run: |
           python3 -m pip install --quiet pyyaml
-          conftest test fixtures/fail/insecure_plan.json -p policies/ --output json > /tmp/r.json || true
+          conftest test fixtures/fail/insecure_plan.json -p policies/ --all-namespaces --output json > /tmp/r.json || true
           python3 cli/report.py --conftest-json /tmp/r.json || true

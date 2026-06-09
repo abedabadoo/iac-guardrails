@@ -36,7 +36,7 @@ def load_controls() -> dict[str, dict]:
 
 def run_conftest(plan: str) -> list[dict]:
     proc = subprocess.run(
-        ["conftest", "test", plan, "-p", str(ROOT / "policies"), "--output", "json"],
+        ["conftest", "test", plan, "-p", str(ROOT / "policies"), "--all-namespaces", "--output", "json"],
         capture_output=True,
         text=True,
     )
